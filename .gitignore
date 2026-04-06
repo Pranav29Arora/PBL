@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env / OS
+.env
+.env.local
+.DS_Store

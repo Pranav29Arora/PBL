@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+  }
+  body {
+    @apply m-0 min-h-screen text-slate-800 transition-colors duration-300;
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 100% -20%, rgba(45, 212, 191, 0.12), transparent),
+      radial-gradient(ellipse 80% 50% at 0% 100%, rgba(16, 185, 129, 0.08), transparent);
+  }
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+    background-image:
+      radial-gradient(ellipse 100% 60% at 100% 0%, rgba(20, 184, 166, 0.12), transparent),
+      radial-gradient(ellipse 80% 40% at 0% 100%, rgba(5, 150, 105, 0.08), transparent);
+  }
+  #root {
+    @apply min-h-screen w-full max-w-none;
+  }
+  ::selection {
+    @apply bg-teal-200/80 text-slate-900 dark:bg-teal-500/40 dark:text-white;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply border border-white/20 bg-white/70 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70;
+  }
+}
+
+/* Stop white autofill / focus flash on inputs (esp. dark mode) */
+@layer components {
+  .ticker-input:-webkit-autofill,
+  .ticker-input:-webkit-autofill:hover,
+  .ticker-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(15 23 42);
+    box-shadow: 0 0 0 1000px rgb(248 250 252) inset;
+    transition: background-color 99999s ease-out 0s;
+  }
+  html.dark .ticker-input:-webkit-autofill,
+  html.dark .ticker-input:-webkit-autofill:hover,
+  html.dark .ticker-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(241 245 249);
+    box-shadow: 0 0 0 1000px rgb(30 41 59) inset;
+  }
+}
