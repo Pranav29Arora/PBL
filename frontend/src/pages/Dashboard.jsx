@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, TrendingUp, History, Zap, Activity, Globe, ShieldCheck, HelpCircle } from 'lucide-react'
+import { TrendingUp, History, Zap, Activity, Globe, ShieldCheck, HelpCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import * as storage from '../services/storage'
 import { formatStoredField } from '../services/formatInr'
 import ChartPlaceholder from '../components/ChartPlaceholder'
+import { subscribePredictions } from '../services/predictions'
 
 const container = {
   hidden: { opacity: 0 },
@@ -41,7 +42,13 @@ function StatCard({ title, value, hint, icon: Icon, colorClass = "text-indigo-60
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const predictions = storage.getPredictions()
+  const [predictions, setPredictions] = useState([])
+
+  useEffect(() => {
+    if (!user?.uid) return undefined
+    return subscribePredictions(user.uid, setPredictions, () => setPredictions([]))
+  }, [user?.uid])
+
   const total = predictions.length
   const avgConf =
     total > 0

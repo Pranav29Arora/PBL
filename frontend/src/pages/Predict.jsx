@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Zap, Info, TrendingUp, AlertCircle, RefreshCw, BarChart3, Clock, CheckCircle2, Cpu } from 'lucide-react'
 import { predictClosing } from '../services/api'
-import * as storage from '../services/storage'
+import { useAuth } from '../context/AuthContext'
+import { savePrediction } from '../services/predictions'
 import { formatInr } from '../services/formatInr'
 import { useToast } from '../context/ToastContext'
-import Spinner from '../components/Spinner'
 import Skeleton from '../components/Skeleton'
 import PriceForecastChart from '../components/PriceForecastChart'
 
@@ -17,14 +17,15 @@ function formatApiError(err) {
 }
 
 export default function Predict() {
+  const { user } = useAuth()
   const { push } = useToast()
   const [symbol, setSymbol] = useState('RELIANCE.NS')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e, symbolOverride) {
     if (e) e.preventDefault()
-    const sym = symbol.trim()
+    const sym = (symbolOverride || symbol).trim()
     if (!sym) {
       push('Enter a stock symbol.', 'error')
       return
@@ -49,8 +50,10 @@ export default function Predict() {
         fxRateToInr: data.fx_rate_to_inr,
         timestamp: new Date().toISOString(),
       }
-      storage.appendPrediction(entry)
-      push('Prediction saved to history.', 'success')
+      if (user?.uid) {
+        await savePrediction(user.uid, entry)
+        push('Prediction saved to history.', 'success')
+      }
     } catch (err) {
       push(formatApiError(err), 'error')
     } finally {
@@ -104,7 +107,11 @@ export default function Predict() {
                 {['TCS.NS', 'AAPL', 'INFY.NS'].map(s => (
                   <button 
                     key={s} 
-                    onClick={() => { setSymbol(s); handleSubmit(); }}
+                    type="button"
+                    onClick={() => {
+                      setSymbol(s)
+                      handleSubmit(null, s)
+                    }}
                     className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
                   >
                     {s}

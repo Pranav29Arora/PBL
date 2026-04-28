@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, TrendingUp, Mail, Lock, LogIn } from 'lucide-react'
+import { ArrowLeft, TrendingUp, Mail, Lock, LogIn, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const { push } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
@@ -16,16 +16,28 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setSubmitting(true)
-    const res = login(email, password)
+    const res = await login(email, password)
     setSubmitting(false)
     if (!res.ok) {
       push(res.error, 'error')
       return
     }
     push('Welcome back.', 'success')
+    navigate(from, { replace: true })
+  }
+
+  async function handleGoogleLogin() {
+    setSubmitting(true)
+    const res = await loginWithGoogle()
+    setSubmitting(false)
+    if (!res.ok) {
+      push(res.error, 'error')
+      return
+    }
+    push('Signed in with Google.', 'success')
     navigate(from, { replace: true })
   }
 
@@ -72,6 +84,25 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={submitting}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white py-3.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              <span className="text-base">G</span>
+              {submitting ? 'Please wait...' : 'Continue with Google'}
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span className="bg-slate-50 px-3 dark:bg-slate-950">Or continue with email</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Email Address</label>
               <div className="relative">

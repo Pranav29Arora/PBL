@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { History as HistoryIcon, Download, Trash2, ExternalLink } from 'lucide-react'
-import * as storage from '../services/storage'
+import { useAuth } from '../context/AuthContext'
 import { formatStoredField } from '../services/formatInr'
+import { deletePrediction, subscribePredictions } from '../services/predictions'
 
 const container = {
   hidden: { opacity: 0 },
@@ -31,11 +32,17 @@ function formatDate(iso) {
 }
 
 export default function History() {
-  const [rows, setRows] = useState(storage.getPredictions())
+  const { user } = useAuth()
+  const [rows, setRows] = useState([])
 
-  const handleDelete = (id) => {
-    const updated = storage.deletePrediction(id)
-    setRows(updated)
+  useEffect(() => {
+    if (!user?.uid) return undefined
+    return subscribePredictions(user.uid, setRows, () => setRows([]))
+  }, [user?.uid])
+
+  const handleDelete = async (id) => {
+    if (!user?.uid) return
+    await deletePrediction(user.uid, id)
   }
 
   const handleExport = () => {

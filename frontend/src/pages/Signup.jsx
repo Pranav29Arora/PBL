@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
 export default function Signup() {
-  const { signup } = useAuth()
+  const { signup, loginWithGoogle } = useAuth()
   const { push } = useToast()
   const navigate = useNavigate()
 
@@ -15,20 +15,32 @@ export default function Signup() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (password.length < 6) {
       push('Password must be at least 6 characters.', 'error')
       return
     }
     setSubmitting(true)
-    const res = signup(name, email, password)
+    const res = await signup(name, email, password)
     setSubmitting(false)
     if (!res.ok) {
       push(res.error, 'error')
       return
     }
     push('Account created. You are signed in.', 'success')
+    navigate('/dashboard', { replace: true })
+  }
+
+  async function handleGoogleSignup() {
+    setSubmitting(true)
+    const res = await loginWithGoogle()
+    setSubmitting(false)
+    if (!res.ok) {
+      push(res.error, 'error')
+      return
+    }
+    push('Signed in with Google.', 'success')
     navigate('/dashboard', { replace: true })
   }
 
@@ -52,7 +64,7 @@ export default function Signup() {
           <div className="mt-20 max-w-md">
             <h2 className="text-4xl font-bold leading-tight">Start your journey to smarter investing.</h2>
             <p className="mt-6 text-lg text-slate-400">
-               Join a community of data-driven investors. All your data is encrypted and stored locally.
+               Join a community of data-driven investors. Your account and saved runs are backed by Firebase.
             </p>
           </div>
         </div>
@@ -75,6 +87,25 @@ export default function Signup() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              disabled={submitting}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white py-3.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              <span className="text-base">G</span>
+              {submitting ? 'Please wait...' : 'Continue with Google'}
+            </button>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span className="bg-slate-50 px-3 dark:bg-slate-950">Or create with email</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Full Name</label>
               <div className="relative">
