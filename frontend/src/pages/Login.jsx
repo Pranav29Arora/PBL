@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { ArrowLeft, TrendingUp, Mail, Lock, LogIn } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
@@ -27,78 +29,101 @@ export default function Login() {
     navigate(from, { replace: true })
   }
 
-  const inputClass =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-slate-900 shadow-inner outline-none transition focus:border-teal-500/60 focus:ring-4 focus:ring-teal-500/15 dark:border-slate-600 dark:bg-slate-800/90 dark:text-white dark:focus:border-teal-400/50'
-
   return (
-    <div className="flex min-h-screen">
-      <div className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-600 via-emerald-700 to-slate-900 p-10 text-white lg:flex">
-        <div className="pointer-events-none absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.06\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-90" />
-        <div className="relative">
-          <p className="font-display text-2xl font-bold">StockVision AI</p>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-teal-100/90">
-            Forecasts in ₹, built for clarity — whether you trade India or global names.
-          </p>
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="relative hidden w-[45%] lg:flex flex-col justify-between overflow-hidden bg-slate-900 p-12 text-white">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-slate-900 to-slate-900" />
+          <div className="absolute -left-20 -top-20 size-96 rounded-full bg-indigo-500/10 blur-[100px]" />
+          <div className="absolute -right-20 -bottom-20 size-96 rounded-full bg-emerald-500/5 blur-[100px]" />
         </div>
-        <p className="relative text-xs text-teal-200/70">Predict smarter. Invest better.</p>
+
+        <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-lg">
+              <TrendingUp className="size-6" />
+            </div>
+            <span className="font-display text-2xl font-bold">StockVision <span className="text-indigo-400">AI</span></span>
+          </Link>
+          
+          <div className="mt-20 max-w-md">
+            <h2 className="text-4xl font-bold leading-tight">Master the market with precision.</h2>
+            <p className="mt-6 text-lg text-slate-400">
+               Join over 2,000 investors using our AI-driven insights to navigate global markets with confidence.
+            </p>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-8">
+           <p className="text-sm text-slate-500">Built for PBL project excellence.</p>
+           <p className="text-sm text-slate-500">v1.2.0</p>
+        </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
-        <div className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/95 p-8 shadow-2xl shadow-slate-300/30 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/95 dark:shadow-black/40 md:p-10">
-          <h1 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
-          <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Credentials stay in this browser — no cloud database.
-          </p>
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-            <div>
-              <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-              />
+      <div className="flex flex-1 items-center justify-center px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
+            <p className="mt-2 text-slate-500">Enter your details to access your dashboard.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                  placeholder="name@example.com"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-              />
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
+
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-teal-600/25 transition hover:from-teal-500 hover:to-emerald-500 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-4 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition-all hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
             >
-              {submitting ? 'Signing in…' : 'Sign in'}
+              {submitting ? <RefreshCw className="size-4 animate-spin" /> : <LogIn className="size-4" />}
+              {submitting ? 'Authenticating...' : 'Sign in to Dashboard'}
             </button>
           </form>
-          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            New here?{' '}
-            <Link to="/signup" className="font-bold text-teal-600 hover:underline dark:text-teal-400">
-              Create account
-            </Link>
+
+          <p className="mt-8 text-center text-sm text-slate-500">
+            Don't have an account?{' '}
+            <Link to="/signup" className="font-bold text-indigo-600 hover:text-indigo-700">Create account</Link>
           </p>
-          <p className="mt-6 text-center">
-            <Link to="/" className="text-xs font-medium text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300">
-              ← Home
-            </Link>
-          </p>
-        </div>
+
+          <Link to="/" className="mt-12 flex items-center justify-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
+            <ArrowLeft className="size-3" />
+            Back to landing page
+          </Link>
+        </motion.div>
       </div>
     </div>
   )
 }
+

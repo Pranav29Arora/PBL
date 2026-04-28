@@ -1,103 +1,120 @@
-import { NavLink } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Link, useLocation } from 'react-router-dom'
+import { 
+  TrendingUp, 
+  LayoutDashboard, 
+  Search, 
+  History, 
+  LogOut, 
+  User,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
-
-const linkClass = ({ isActive }) =>
-  [
-    'group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200',
-    isActive
-      ? 'bg-gradient-to-r from-teal-600/15 to-emerald-600/10 text-teal-800 shadow-sm ring-1 ring-teal-500/20 dark:from-teal-500/20 dark:to-emerald-500/10 dark:text-teal-200 dark:ring-teal-400/25'
-      : 'text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100',
-  ].join(' ')
-
-function IconDashboard({ className }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm8 0h10v-9H12v9zm0-16v5h10V4H12z"
-        fill="currentColor"
-        opacity="0.9"
-      />
-    </svg>
-  )
-}
-function IconPredict({ className }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z" opacity="0.92" />
-    </svg>
-  )
-}
-function IconHistory({ className }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path
-        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
-        opacity="0.92"
-      />
-    </svg>
-  )
-}
+import { useState } from 'react'
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
+  const location = useLocation()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  const navItems = [
+    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Predict', path: '/predict', icon: Search },
+    { label: 'History', path: '/history', icon: History },
+  ]
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white/85 py-6 pl-5 pr-4 shadow-lg shadow-slate-200/30 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80 dark:shadow-black/40">
-      <div className="mb-10 px-1">
-        <div className="flex items-center gap-2">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-bold text-white shadow-lg shadow-teal-500/30">
-            ₹
+    <motion.div
+      animate={{ width: isCollapsed ? 88 : 280 }}
+      className="relative flex h-screen flex-col border-r border-slate-200 bg-white/50 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-slate-900/50"
+    >
+      {/* Collapse Toggle */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-12 z-50 flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+      >
+        {isCollapsed ? <ChevronRight className="size-3" /> : <ChevronLeft className="size-3" />}
+      </button>
+
+      <div className="flex h-20 items-center justify-center border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+            <TrendingUp className="size-6" />
           </div>
-          <div>
-            <p className="font-display text-base font-bold tracking-tight text-slate-900 dark:text-white">
-              StockVision
-            </p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-teal-600 dark:text-teal-400">
-              AI
-            </p>
-          </div>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="font-display text-xl font-bold text-slate-900 dark:text-white"
+              >
+                StockVision
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
-        <p className="mt-4 truncate rounded-lg bg-slate-100/80 px-2.5 py-1.5 text-[11px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-400">
-          {user?.email}
-        </p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1.5">
-        <NavLink to="/dashboard" className={linkClass}>
-          <IconDashboard className="opacity-80 group-hover:opacity-100" />
-          Dashboard
-        </NavLink>
-        <NavLink to="/predict" className={linkClass}>
-          <IconPredict className="opacity-80 group-hover:opacity-100" />
-          Predict
-        </NavLink>
-        <NavLink to="/history" className={linkClass}>
-          <IconHistory className="opacity-80 group-hover:opacity-100" />
-          History
-        </NavLink>
+      <nav className="flex-1 space-y-2 p-4 pt-10">
+        {navItems.map((item) => {
+          const active = location.pathname === item.path
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`group relative flex items-center gap-4 rounded-xl px-4 py-3.5 transition-all ${
+                active
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                  : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+              }`}
+            >
+              <item.icon className={`size-5 transition-transform group-hover:scale-110 ${active ? 'text-white' : ''}`} />
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="text-sm font-bold ml-4"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              {active && (
+                <motion.div
+                  layoutId="active-pill"
+                  className="absolute left-[-4px] top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-white"
+                />
+              )}
+            </Link>
+          )
+        })}
       </nav>
 
-      <div className="mt-auto space-y-2 border-t border-slate-200/80 pt-5 dark:border-slate-800">
+      <div className="space-y-4 border-t border-slate-100 p-4 dark:border-slate-800">
+
+        <div className={`flex items-center gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 ${isCollapsed ? 'justify-center p-2' : ''}`}>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-slate-700">
+            <User className="size-5 text-slate-600 dark:text-slate-300" />
+          </div>
+          {!isCollapsed && (
+            <div className="min-w-0 flex-1 ml-4">
+              <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{user?.name}</p>
+            </div>
+          )}
+        </div>
+
         <button
-          type="button"
-          onClick={toggleTheme}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/90"
-        >
-          <span className="text-lg" aria-hidden>
-            {theme === 'dark' ? '☀' : '☾'}
-          </span>
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
-        <button
-          type="button"
           onClick={logout}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/50"
+          className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
         >
-          Logout
+          <LogOut className="size-5" />
+          {!isCollapsed && <span className="text-sm font-bold ml-4">Sign out</span>}
         </button>
       </div>
-    </aside>
+    </motion.div>
   )
 }

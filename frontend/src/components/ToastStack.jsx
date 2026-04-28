@@ -2,7 +2,7 @@ import { useToast } from '../context/ToastContext'
 
 const styles = {
   info: 'bg-slate-800 text-white shadow-slate-900/20 dark:bg-slate-100 dark:text-slate-900',
-  success: 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-600/25',
+  success: 'bg-gradient-to-r from-indigo-600 to-emerald-600 text-white shadow-lg shadow-indigo-600/25',
   error: 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg shadow-rose-600/20',
 }
 

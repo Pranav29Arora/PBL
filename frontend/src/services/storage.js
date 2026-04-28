@@ -64,6 +64,13 @@ export function appendPrediction(entry) {
   return list
 }
 
+export function deletePrediction(id) {
+  const list = getPredictions()
+  const filtered = list.filter((item) => item.id !== id)
+  writeJson(PREDICTIONS_KEY, filtered)
+  return filtered
+}
+
 export function getTheme() {
   return readJson(THEME_KEY, 'light')
 }

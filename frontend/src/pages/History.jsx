@@ -1,5 +1,23 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { History as HistoryIcon, Download, Trash2, ExternalLink } from 'lucide-react'
 import * as storage from '../services/storage'
 import { formatStoredField } from '../services/formatInr'
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+}
+
+const item = {
+  hidden: { opacity: 0, x: -10 },
+  show: { opacity: 1, x: 0 }
+}
 
 function formatDate(iso) {
   try {
@@ -13,70 +31,151 @@ function formatDate(iso) {
 }
 
 export default function History() {
-  const rows = storage.getPredictions()
+  const [rows, setRows] = useState(storage.getPredictions())
+
+  const handleDelete = (id) => {
+    const updated = storage.deletePrediction(id)
+    setRows(updated)
+  }
+
+  const handleExport = () => {
+    const csv = [
+      ['Timestamp', 'Symbol', 'Open Price', 'Predicted Close', 'Confidence', 'Trend'],
+      ...rows.map(r => [
+        new Date(r.timestamp).toLocaleString(),
+        r.symbol,
+        formatStoredField(r, 'open'),
+        formatStoredField(r, 'prediction'),
+        `${(Number(r.confidence) * 100).toFixed(1)}%`,
+        r.prediction > r.open ? 'Bullish' : 'Bearish'
+      ])
+    ].map(row => row.join(',')).join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `stockvision-history-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div className="rounded-3xl border border-slate-200/60 bg-gradient-to-r from-white to-teal-50/30 p-8 shadow-md dark:border-slate-700/50 dark:from-slate-900 dark:to-teal-950/20 md:p-9">
-        <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white">Prediction history</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          Stored in <strong className="text-slate-800 dark:text-slate-200">localStorage</strong> on this device. Rows
-          saved after the INR update show <strong className="text-slate-800 dark:text-slate-200">₹</strong>; older rows
-          may still show US dollars.
-        </p>
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto max-w-7xl space-y-8"
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-slate-900 dark:text-white">Forecasting History</h1>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            A comprehensive log of all your AI-driven market predictions.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-all"
+          >
+            <Download className="size-4" />
+            Export CSV
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/95 shadow-xl shadow-slate-200/25 dark:border-slate-700/50 dark:bg-slate-900/90 dark:shadow-black/30">
+      <motion.div variants={item} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-teal-50/40 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:border-slate-700 dark:from-slate-800 dark:to-teal-950/30 dark:text-slate-400">
-              <tr>
-                <th className="px-5 py-4">Saved</th>
-                <th className="px-5 py-4">Stock</th>
-                <th className="px-5 py-4">Yahoo bar</th>
-                <th className="px-5 py-4">Open</th>
-                <th className="px-5 py-4">Prev close</th>
-                <th className="px-5 py-4">Prediction</th>
-                <th className="px-5 py-4">Confidence</th>
+          <table className="w-full min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900/50">
+                <th className="px-6 py-4">Timestamp</th>
+                <th className="px-6 py-4">Symbol</th>
+                <th className="px-6 py-4">Open Price</th>
+                <th className="px-6 py-4">Predicted Close</th>
+                <th className="px-6 py-4">Confidence</th>
+                <th className="px-6 py-4">Trend</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-slate-500 dark:text-slate-400">
-                    No predictions yet. Run one from the Predict page.
+                  <td colSpan={7} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center">
+                      <HistoryIcon className="size-12 text-slate-200 dark:text-slate-800 mb-4" />
+                      <p className="text-sm font-medium text-slate-500">No history found</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 rows.map((r) => (
-                  <tr
+                  <motion.tr
                     key={r.id}
-                    className="transition hover:bg-teal-50/40 dark:hover:bg-slate-800/40"
+                    variants={item}
+                    className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   >
-                    <td className="whitespace-nowrap px-5 py-3.5 text-slate-600 dark:text-slate-300">
+                    <td className="whitespace-nowrap px-6 py-4 text-slate-500 dark:text-slate-400">
                       {formatDate(r.timestamp)}
                     </td>
-                    <td className="px-5 py-3.5 font-mono font-semibold text-slate-900 dark:text-white">{r.symbol}</td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-slate-600 dark:text-slate-400">
-                      {r.asOf || '—'}
+                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
+                      {r.symbol}
                     </td>
-                    <td className="px-5 py-3.5 tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="px-6 py-4 tabular-nums text-slate-600 dark:text-slate-400">
                       {formatStoredField(r, 'open')}
                     </td>
-                    <td className="px-5 py-3.5 tabular-nums text-slate-800 dark:text-slate-200">
-                      {formatStoredField(r, 'prevClose')}
-                    </td>
-                    <td className="px-5 py-3.5 font-semibold tabular-nums text-teal-600 dark:text-teal-400">
+                    <td className="px-6 py-4 font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
                       {formatStoredField(r, 'prediction')}
                     </td>
-                    <td className="px-5 py-3.5 tabular-nums">{(Number(r.confidence) * 100).toFixed(1)}%</td>
-                  </tr>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div 
+                            className="h-full bg-indigo-500" 
+                            style={{ width: `${Number(r.confidence) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] font-bold">{(Number(r.confidence) * 100).toFixed(1)}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                       <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                         r.prediction > r.open 
+                          ? 'bg-emerald-500/10 text-emerald-600' 
+                          : 'bg-rose-500/10 text-rose-600'
+                       }`}>
+                         {r.prediction > r.open ? 'Bullish' : 'Bearish'}
+                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                          title="View on Yahoo Finance"
+                          onClick={() => window.open(`https://finance.yahoo.com/quote/${r.symbol}`, '_blank')}
+                        >
+                          <ExternalLink className="size-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-slate-400 hover:text-rose-600 transition-colors"
+                          title="Delete prediction"
+                          onClick={() => handleDelete(r.id)}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
+
