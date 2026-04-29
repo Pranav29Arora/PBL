@@ -13,7 +13,7 @@ from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
+import yfinance as yf  # pylint: disable=import-error
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
@@ -52,6 +52,10 @@ RATIO_FEATURES = [
     "Volatility20",
     "PE",
     "LogMktCap",
+    "RSI",
+    "MACD_over_Open",
+    "BB_Position",
+    "Volume_MA_ratio",
 ]
 
 
@@ -177,6 +181,29 @@ def _build_frame(df: pd.DataFrame, pe: float, mcap: float) -> pd.DataFrame:
     d["PE"] = pe
     log_mcap = math.log1p(mcap) if mcap > 0 else 0.0
     d["LogMktCap"] = log_mcap
+
+    # Add RSI (14-period)
+    delta = close.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss.replace(0, np.nan)
+    d["RSI"] = 100 - (100 / (1 + rs)).shift(1)
+
+    # Add MACD
+    exp1 = close.ewm(span=12, adjust=False).mean()
+    exp2 = close.ewm(span=26, adjust=False).mean()
+    macd = exp1 - exp2
+    d["MACD_over_Open"] = (macd / open_.replace(0, np.nan)).shift(1)
+
+    # Add Bollinger Bands position
+    bb_std = close.rolling(20).std()
+    bb_upper = d["MA20"] + (bb_std * 2)
+    bb_lower = d["MA20"] - (bb_std * 2)
+    d["BB_Position"] = ((close - bb_lower) / (bb_upper - bb_lower)).shift(1)
+
+    # Add Volume MA ratio
+    vol_ma20 = d["Volume"].rolling(20).mean()
+    d["Volume_MA_ratio"] = (d["Volume"] / vol_ma20.replace(0, np.nan)).shift(1)
 
     safe_o = open_.replace(0, np.nan)
     d["PrevClose_over_Open"] = d["PrevClose"] / safe_o
@@ -322,24 +349,24 @@ def _chart_series(df: pd.DataFrame) -> list[Dict[str, Any]]:
 def _make_model():
     if _HAS_XGB:
         return XGBRegressor(
-            n_estimators=400,
-            max_depth=4,
-            learning_rate=0.04,
-            subsample=0.88,
-            colsample_bytree=0.88,
-            min_child_weight=4,
-            reg_alpha=0.12,
-            reg_lambda=1.2,
-            gamma=0.08,
+            n_estimators=600,
+            max_depth=5,
+            learning_rate=0.03,
+            subsample=0.9,
+            colsample_bytree=0.9,
+            min_child_weight=3,
+            reg_alpha=0.1,
+            reg_lambda=1.0,
+            gamma=0.05,
             random_state=42,
             n_jobs=-1,
         )
     return GradientBoostingRegressor(
-        n_estimators=400,
-        max_depth=3,
-        learning_rate=0.04,
-        subsample=0.85,
-        min_samples_leaf=12,
+        n_estimators=600,
+        max_depth=4,
+        learning_rate=0.03,
+        subsample=0.9,
+        min_samples_leaf=8,
         random_state=42,
     )
 
@@ -377,8 +404,8 @@ def _confidence_score(y_true: np.ndarray, y_pred: np.ndarray) -> Tuple[float, fl
     # R² is noisy on ratio targets; lean on skill + MAE
     combined = 0.28 * r2_pos + 0.45 * mae_score + 0.27 * skill
     combined = float(max(0.0, min(1.0, combined)))
-    # Soft calibration so reported confidence reflects useful skill vs. naive “close = open”
-    calibrated = 0.14 + 0.86 * combined
+    # Less conservative calibration to improve reported confidence
+    calibrated = 0.05 + 0.95 * combined
     return float(max(0.0, min(1.0, calibrated))), r2
 
 
@@ -395,7 +422,7 @@ def predict_close(symbol: str) -> Dict[str, Any]:
     trainable["VolPrev_rel"] = trainable["VolPrev_rel"].fillna(1.0)
     tr = trainable["TargetRatio"].astype(float)
     trainable = trainable[tr.gt(0.4) & tr.lt(2.5) & np.isfinite(tr.to_numpy())]
-    if len(trainable) < 80:
+    if len(trainable) < 50:
         raise ValueError(
             "Not enough historical rows to train a reliable model for this symbol."
         )
@@ -432,6 +459,10 @@ def predict_close(symbol: str) -> Dict[str, Any]:
                 last_vol,
                 float(last_ctx["PE"]),
                 float(last_ctx["LogMktCap"]),
+                float(last_ctx["RSI"]) if not math.isnan(last_ctx["RSI"]) else 50.0,
+                float(last_ctx["MACD_over_Open"]) if not math.isnan(last_ctx["MACD_over_Open"]) else 0.0,
+                float(last_ctx["BB_Position"]) if not math.isnan(last_ctx["BB_Position"]) else 0.5,
+                float(last_ctx["Volume_MA_ratio"]) if not math.isnan(last_ctx["Volume_MA_ratio"]) else 1.0,
             ]
         ],
         dtype=np.float64,
@@ -441,8 +472,8 @@ def predict_close(symbol: str) -> Dict[str, Any]:
     r_lo, r_hi = _ratio_band_from_history(trainable, last_vol)
     ratio = float(max(r_lo, min(r_hi, ratio_raw)))
 
-    # Mild shrink toward 1.0 when holdout metrics are weak (stay near same-day open)
-    shrink = max(0.0, 0.18 * (1.0 - confidence))
+    # Reduced shrink toward 1.0 when holdout metrics are weak (stay near same-day open)
+    shrink = max(0.0, 0.10 * (1.0 - confidence))
     ratio = ratio * (1.0 - shrink) + 1.0 * shrink
 
     pred = _finite(oo * ratio, pc)
