@@ -1,76 +1,125 @@
 # StockVision AI
 
-**StockVision AI** is a full-stack web app that estimates a stock’s **same-day closing price** using live and historical Yahoo Finance data, technical indicators, fundamentals, and a regression model (XGBoost when available, otherwise scikit-learn Gradient Boosting).
+**StockVision AI** is a sophisticated full-stack web application that leverages machine learning to predict same-day stock closing prices. The system combines real-time Yahoo Finance data, technical indicators, fundamental analysis, and advanced regression models (XGBoost with scikit-learn Gradient Boosting fallback) to deliver accurate stock price predictions.
 
 **Tagline:** Predict smarter. Invest better.
 
 ---
 
-## Features
+## 🚀 Key Features
 
-- **Frontend:** React (Vite), Tailwind CSS v4, React Router, Axios  
-- **Backend:** FastAPI REST API, `yfinance`, scikit-learn, XGBoost  
-- **Mock auth:** Sign up / login / session stored in **localStorage** only (no database)  
-- **Protected routes:** Dashboard, Predict, History  
-- **Predictions history:** Saved in localStorage (symbol, live open/prev close, prediction in **₹**, confidence, timestamp)  
-- **Pricing:** All API amounts in **INR** — NSE/BSE symbols (`.NS` / `.BO`) native ₹; US symbols converted via live **USDINR=X** (cached).  
-- **UI:** Teal/emerald theme, charts (Recharts), toasts, dark mode, glass-style panels  
-- **Performance:** In-memory TTL cache for downloaded prices and fundamentals  
+### Frontend
+- **React 18** with Vite for lightning-fast development
+- **Tailwind CSS v4** with custom teal/emerald theme and glass-morphism design
+- **React Router** for client-side routing with protected routes
+- **Recharts** for interactive price charts and visualizations
+- **Framer Motion** for smooth animations and transitions
+- **Lucide React** icons for modern UI elements
+- **Dark mode** with persistent theme preferences
+- **Toast notifications** for user feedback
+
+### Backend
+- **FastAPI** REST API with automatic OpenAPI documentation
+- **XGBoost** and **scikit-learn** for machine learning predictions
+- **Yahoo Finance API** integration with fallback mechanisms
+- **In-memory TTL cache** for optimal performance
+- **CORS support** for cross-origin requests
+
+### Data & Authentication
+- **Mock authentication** with localStorage persistence
+- **Protected routes** for Dashboard, Predict, and History pages
+- **Predictions history** stored locally with detailed metrics
+- **Multi-currency support** - Native INR for Indian stocks, USD→INR conversion for US stocks
+- **Real-time confidence scores** based on model R² metrics
+
+### Performance & UX
+- **Responsive design** optimized for desktop and mobile
+- **Loading states** and skeleton screens for better UX
+- **Error handling** with user-friendly messages
+- **Session management** with automatic logout
+- **Dashboard analytics** with prediction statistics  
 
 ---
 
-## Project layout
+## 📁 Project Architecture
 
 ```text
 PBL/
-├── backend/
-│   ├── main.py           # FastAPI app, CORS, POST /api/predict
-│   ├── requirements.txt
-│   ├── ml/
-│   │   └── predictor.py  # Features, train, predict, holdout R² → confidence
-│   └── utils/
-│       └── cache.py      # Simple TTL cache
-├── frontend/
+├── backend/                          # FastAPI ML Service
+│   ├── main.py                      # FastAPI app, CORS, POST /api/predict
+│   ├── requirements.txt             # Python dependencies
+│   ├── ml/                          # Machine Learning Components
+│   │   ├── __init__.py
+│   │   └── predictor.py             # Features, train, predict, holdout R² → confidence
+│   └── utils/                       # Utility Modules
+│       ├── __init__.py
+│       ├── cache.py                 # Simple TTL cache for market data
+│       └── yahoo_chart.py           # Fallback Yahoo Finance API
+├── frontend/                        # React Frontend
 │   ├── src/
-│   │   ├── components/   # Layout, sidebar, spinner, chart placeholder, toasts
-│   │   ├── pages/        # Landing, Login, Signup, Dashboard, Predict, History
-│   │   ├── services/     # api.js, storage.js
-│   │   ├── context/      # Auth, Theme, Toast
-│   │   ├── routes/       # ProtectedRoute
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── vite.config.js    # Tailwind plugin + /api proxy → :8000
-└── README.md
-```
+│   │   ├── components/              # Reusable UI Components
+│   │   │   ├── AppLayout.jsx        # Main layout wrapper
+│   │   │   ├── Sidebar.jsx          # Navigation sidebar
+│   │   │   ├── Spinner.jsx          # Loading spinner
+│   │   │   ├── Skeleton.jsx         # Skeleton loading states
+│   │   │   └── ChartPlaceholder.jsx # Chart loading placeholder
+│   │   ├── context/                 # React Context Providers
+│   │   │   ├── AuthContext.jsx      # Authentication state
+│   │   │   ├── ThemeContext.jsx     # Theme management
+│   │   │   └── ToastContext.jsx     # Toast notifications
+│   │   ├── pages/                   # Page Components
+│   │   │   ├── Landing.jsx          # Landing page
+│   │   │   ├── Login.jsx            # Login page
+│   │   │   ├── Signup.jsx           # Signup page
+│   │   │   ├── Dashboard.jsx        # Dashboard with analytics
+│   │   │   ├── Predict.jsx          # Stock prediction interface
+│   │   │   └── History.jsx          # Prediction history
+│   │   ├── routes/                  # Route Protection
+│   │   │   └── ProtectedRoute.jsx    # Authenticated route wrapper
+│   │   ├── services/                # API & Storage Services
+│   │   │   ├── api.js               # Backend API calls
+│   │   │   ├── storage.js           # Local storage management
+│   │   │   └── formatInr.js         # Currency formatting utilities
+│   │   ├── App.jsx                  # Main app component
+│   │   └── main.jsx                 # React entry point
+│   ├── package.json                 # Node.js dependencies
+│   └── vite.config.js               # Vite configuration with proxy
+├── ARCHITECTURE.md                  # Detailed architecture documentation
+├── README.md                        # This file
+└── .gitignore                       # Git ignore patterns
 
 ---
 
-## Run locally (step by step)
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - **Node.js** 18+ and npm  
 - **Python** 3.10+ (3.13 tested)  
 
-### 1. Backend
+### 1. Backend Setup
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python3 -m venv .venv313
+source .venv313/bin/activate   # Windows: .venv313\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
 
-The API serves at **http://127.0.0.1:8000** with:
+The FastAPI server starts at **http://127.0.0.1:8000** with:
 
-- `GET /api/health`  
-- `POST /api/predict` — body: `{ "symbol": "AAPL" }` (open and previous close are read from Yahoo daily bars)  
+- `GET /api/health` - Health check endpoint  
+- `POST /api/predict` - Stock prediction endpoint  
+  - Request body: `{ "symbol": "AAPL" }` or `{ "symbol": "RELIANCE.NS" }`  
+  - Response includes predicted close, confidence score, and historical data
 
-Optional: `CORS_ORIGINS` (comma-separated) if the frontend runs on another origin.  
-If Yahoo/`yfinance` is flaky, the API falls back to Yahoo’s **chart v8** JSON endpoint. Set `DEBUG_API=1` to include exception details in 502 responses while debugging.
+**Environment Variables:**
+- `CORS_ORIGINS` - Comma-separated origins (default: localhost:5173,3000)
+- `DEBUG_API=1` - Include exception details in error responses
+- `PORT=8000` - API server port
 
-### 2. Frontend
+### 2. Frontend Setup
 
 In a **second** terminal:
 
@@ -80,51 +129,143 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (usually **http://localhost:5173**).
+The Vite dev server starts at **http://localhost:5173** with:
 
-The dev server **proxies** `/api/*` to the backend, so keep the API on port **8000** or change `vite.config.js`.
+- **Hot Module Replacement** for instant updates
+- **API proxy** automatically forwards `/api/*` requests to backend
+- **Responsive design** optimized for all screen sizes
 
-Optional: copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL` to a full API base URL if you are not using the proxy.
+### 3. Application Usage
 
-### 3. Use the app
+1. **Launch the app** - Navigate to http://localhost:5173
+2. **Create account** - Sign up with email and password (stored in localStorage)
+3. **Login** - Access your personalized dashboard
+4. **Make predictions** - Enter stock symbols (e.g., AAPL, RELIANCE.NS, TCS.BO)
+5. **View history** - Track your prediction accuracy and confidence scores
+6. **Dashboard analytics** - Monitor prediction statistics and trends
 
-1. Open the site → **Get Started** (signup) or **Login**.  
-2. Credentials are stored only in this browser’s **localStorage**.  
-3. Go to **Predict**, enter a symbol → submit (open and previous close load from Yahoo).  
-4. View results and **History**; the dashboard shows counts and average confidence from your saved runs.  
+### 4. Development Tips
+
+- **Backend reloads** automatically with FastAPI's `reload=True`
+- **Frontend HMR** provides instant UI updates
+- **Browser DevTools** - Use Network tab to inspect API calls
+- **Error handling** - Check browser console for detailed error messages  
 
 ---
 
-## API contract
+## 📡 API Documentation
+
+### Prediction Endpoint
 
 **POST** `/api/predict`
 
-| Field    | Type   | Description        |
-|----------|--------|--------------------|
-| `symbol` | string | Ticker (e.g. `RELIANCE.NS`, `AAPL`) — up to 32 chars |
+#### Request Body
+```json
+{
+  "symbol": "AAPL"  // Stock ticker (max 32 chars)
+}
+```
 
-**Response** (monetary fields are **Indian Rupees**)
+#### Response Schema
+```json
+{
+  "prediction": 185.42,        // Predicted same-day close (₹)
+  "confidence": 0.87,          // Confidence score (0-1)
+  "open": 182.15,              // Same-day open price (₹)
+  "prev_close": 180.93,        // Previous close price (₹)
+  "currency": "INR",           // Always INR
+  "fx_rate_to_inr": 83.12,     // Exchange rate used
+  "usd_converted": true,       // Whether USD conversion was applied
+  "as_of": "2024-04-30",       // Latest market data date
+  "history_days": 504,         // Historical data points used
+  "chart_series": [            // Historical price data for charts
+    {
+      "date": "2024-04-29",
+      "close": 180.93,
+      "open": 179.50
+    }
+  ],
+  "r2_holdout": 0.87           // Raw R² score on holdout data
+}
+```
 
-| Field             | Type    | Description                                      |
-|-------------------|---------|--------------------------------------------------|
-| `prediction`      | number  | Predicted same-day close (₹)                     |
-| `open`            | number  | Same-day open (₹)                                |
-| `prev_close`      | number  | Prior close (₹)                                  |
-| `currency`        | string  | Always `INR`                                     |
-| `fx_rate_to_inr`  | number  | `1.0` if Indian listing; else USD→INR rate used  |
-| `usd_converted`   | boolean | `true` if symbol was USD-listed and converted    |
-| `as_of`           | string  | Date of the latest daily bar (`YYYY-MM-DD`)      |
-| `history_days`    | number  | Count of daily bars in `chart_series` (~2y)      |
-| `chart_series`    | array   | `{ date, close, open? }[]` (₹) for the chart     |
-| `confidence`      | number  | `max(0, min(1, R²))` on a time-ordered holdout   |
-| `r2_holdout`      | number  | Raw R² on the same holdout split                 |
+### Health Check
+
+**GET** `/api/health`
+
+```json
+{
+  "status": "ok",
+  "service": "StockVision AI"
+}
+```
+
+### Error Responses
+
+- **400 Bad Request**: Invalid symbol format or missing data
+- **502 Bad Gateway**: Yahoo Finance API issues or model errors
 
 ---
 
-## Disclaimer
+## 🔧 Technical Details
 
-Outputs are **experimental** and depend on data quality, corporate actions, and market regime. This is **not** financial advice.
+### Machine Learning Pipeline
+
+1. **Data Collection**: Real-time Yahoo Finance data with fallback mechanisms
+2. **Feature Engineering**: Technical indicators, fundamental metrics, price patterns
+3. **Model Selection**: XGBoost (primary) with scikit-learn Gradient Boosting fallback
+4. **Validation**: Time-ordered holdout split for realistic performance metrics
+5. **Confidence Scoring**: R²-based confidence with bounded 0-1 range
+
+### Currency Handling
+
+- **Indian Stocks** (.NS, .BO): Native INR pricing
+- **US Stocks**: Real-time USD→INR conversion via Yahoo Finance
+- **Exchange Rate Caching**: TTL cache for FX rates to optimize performance
+
+### Caching Strategy
+
+- **Market Data**: 15-minute TTL for price data
+- **FX Rates**: 1-hour TTL for exchange rates
+- **Fundamentals**: 24-hour TTL for company metrics
 
 ---
 
-*Predict smarter. Invest better.*
+## 🚧 Future Enhancements
+
+### Planned Features
+- **Firebase Integration**: Real-time sync across devices
+- **Advanced Models**: LSTM neural networks for time series
+- **Portfolio Management**: Multi-stock prediction tracking
+- **Alert System**: Price movement notifications
+- **Mobile App**: React Native implementation
+
+### Architecture Improvements
+- **Database Migration**: From localStorage to Firestore
+- **Authentication**: Firebase Auth with social login
+- **API Rate Limiting**: Prevent abuse and ensure stability
+- **Monitoring**: Application performance tracking
+
+---
+
+## ⚠️ Disclaimer
+
+**StockVision AI predictions are for educational purposes only.** 
+
+- **Not Financial Advice**: This tool does not provide investment recommendations
+- **Market Risks**: Stock markets are inherently unpredictable
+- **Data Limitations**: Predictions depend on data quality and availability
+- **Model Limitations**: ML models may not capture all market factors
+- **Past Performance**: Historical accuracy does not guarantee future results
+
+**Always consult with qualified financial professionals before making investment decisions.**
+
+---
+
+## 📄 License
+
+This project is developed as part of an academic demonstration. Please refer to the project repository for licensing information.
+
+---
+
+*Predict smarter. Invest better.* 🚀
