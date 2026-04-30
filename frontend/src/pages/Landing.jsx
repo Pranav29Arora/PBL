@@ -1,20 +1,10 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Shield, BarChart2, Globe, ArrowRight, Zap, Play, LineChart } from 'lucide-react'
+import { TrendingUp, Shield, BarChart2, Globe, ArrowRight, Zap, LineChart } from 'lucide-react'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
-}
-
-const container = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
 }
 
 export default function Landing() {
@@ -80,7 +70,7 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-12 flex flex-col items-center gap-4 sm:flex-row"
+          className="mt-12 flex justify-center"
         >
           <Link
             to="/signup"
@@ -89,31 +79,30 @@ export default function Landing() {
             Start Predicting Now
             <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
           </Link>
-          <button className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 px-8 py-5 text-lg font-bold text-white backdrop-blur-sm transition-all hover:bg-slate-900">
-             <Play className="size-5 fill-current" />
-             Watch Demo
-          </button>
         </motion.div>
 
-        {/* Ticker (Visual Only) */}
-        <div className="mt-24 w-full overflow-hidden border-y border-white/5 bg-white/5 py-6 backdrop-blur-sm">
-          <motion.div
-            animate={{ x: [0, -1000] }}
-            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-            className="flex gap-16 whitespace-nowrap"
-          >
-            {[
-              'RELIANCE.NS +1.2%', 'TCS.NS -0.4%', 'AAPL +2.1%', 'NVDA +5.6%', 'INFY.NS +0.8%',
-              'HDFCBANK.NS -1.1%', 'TSLA +3.2%', 'GOOGL +1.5%', 'MSFT +0.9%', 'NIFTY 50 +0.45%'
-            ].map((stock, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-wider text-slate-400 uppercase">{stock.split(' ')[0]}</span>
-                <span className={`text-sm font-bold ${stock.includes('-') ? 'text-rose-500' : 'text-emerald-500'}`}>
-                  {stock.split(' ')[1]}
-                </span>
+        {/* Real App Statistics */}
+        <div className="mt-24 w-full border-y border-white/5 bg-white/5 py-12 backdrop-blur-sm">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-indigo-400">2 Years</div>
+                <div className="text-sm text-slate-400 mt-2">Historical Data Analysis</div>
               </div>
-            ))}
-          </motion.div>
+              <div>
+                <div className="text-3xl font-bold text-indigo-400">12+</div>
+                <div className="text-sm text-slate-400 mt-2">Technical Indicators</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-indigo-400">XGBoost</div>
+                <div className="text-sm text-slate-400 mt-2">ML Model Engine</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-indigo-400">INR</div>
+                <div className="text-sm text-slate-400 mt-2">Native Currency Support</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -121,15 +110,15 @@ export default function Landing() {
       <section className="relative z-10 px-6 py-24 md:px-12 bg-slate-900/20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 text-center">
-            <h2 className="font-display text-4xl font-bold md:text-6xl">Institutional Grade Tools</h2>
-            <p className="mt-4 text-slate-400 text-lg">Everything you need to navigate the volatility of modern finance.</p>
+            <h2 className="font-display text-4xl font-bold md:text-6xl">Real Technical Analysis</h2>
+            <p className="mt-4 text-slate-400 text-lg">Data-driven predictions using proven machine learning methods.</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
              {[
-               { icon: Zap, title: "Real-time Processing", desc: "Live integration with Yahoo Finance API for the latest intra-day daily bars." },
-               { icon: BarChart2, title: "Advanced ML Models", desc: "Utilizing XGBoost and Ensemble methods for superior predictive accuracy." },
-               { icon: Globe, title: "Any Market, Any Symbol", desc: "Native support for NSE/BSE tickers (.NS, .BO) and automated FX conversion for global stocks." }
+               { icon: BarChart2, title: "Technical Indicators", desc: "RSI, MACD, Bollinger Bands, Moving Averages, Volume analysis, and volatility metrics." },
+               { icon: Zap, title: "Live Market Data", desc: "Real-time Yahoo Finance integration with 2-year historical data for comprehensive analysis." },
+               { icon: Globe, title: "Global Coverage", desc: "NSE/BSE (.NS, .BO) native support + USD stocks with automatic INR conversion." }
              ].map((f, i) => (
                <motion.div
                  key={i}
@@ -158,20 +147,29 @@ export default function Landing() {
       <footer className="relative z-10 border-t border-white/5 bg-slate-950 px-6 py-20 md:px-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
           <div>
-            <h2 className="font-display text-4xl font-bold">Ready to trade smarter?</h2>
-            <p className="mt-4 text-lg text-slate-400">Join 2,000+ investors using StockVision AI today.</p>
+            <h2 className="font-display text-4xl font-bold">Start analyzing stocks today</h2>
+            <p className="mt-4 text-lg text-slate-400">Get AI-powered predictions with real market data and technical analysis.</p>
           </div>
           <Link to="/signup" className="rounded-2xl bg-white px-10 py-5 font-bold text-slate-950 transition-all hover:bg-slate-100 hover:shadow-2xl active:scale-95">
              Get Started
           </Link>
         </div>
-        <div className="mx-auto mt-20 max-w-7xl border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-500 uppercase tracking-widest">
-           <p>© 2026 StockVision AI. For educational purposes only.</p>
-           <div className="flex gap-8">
+        <div className="mx-auto mt-20 max-w-7xl border-t border-white/5 pt-10">
+          <div className="text-center space-y-4">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
+              © 2026 StockVision AI. Educational and research purposes only.
+            </p>
+            <p className="text-xs text-slate-600 max-w-2xl mx-auto">
+              Predictions are based on historical data analysis and machine learning models. 
+              Not financial advice. Past performance does not guarantee future results. 
+              Always consult with qualified financial professionals before making investment decisions.
+            </p>
+            <div className="flex gap-8 justify-center text-xs font-medium text-slate-500 uppercase tracking-widest">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
               <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Support</a>
-           </div>
+              <a href="#" className="hover:text-white transition-colors">API Docs</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

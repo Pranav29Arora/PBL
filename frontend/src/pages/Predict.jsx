@@ -132,15 +132,15 @@ export default function Predict() {
           </div>
         </div>
 
-        <div className="lg:col-span-3">
-          <AnimatePresence mode="wait">
+        <div className="lg:col-span-3 relative min-h-[500px]">
+          <AnimatePresence>
             {!result && !loading && (
               <motion.div
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 text-center dark:border-slate-800"
+                className="absolute inset-0 flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 text-center dark:border-slate-800"
               >
                 <div className="mb-6 rounded-full bg-slate-50 p-6 dark:bg-slate-900 shadow-inner">
                   <BarChart3 className="size-12 text-slate-300 dark:text-slate-700" />
@@ -158,7 +158,8 @@ export default function Predict() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-6"
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="absolute inset-0 space-y-6 min-h-[500px]"
               >
                 <div className="grid gap-4 sm:grid-cols-3">
                   <Skeleton className="h-24" />
@@ -172,9 +173,10 @@ export default function Predict() {
             {result && (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="space-y-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="absolute inset-0 space-y-6 min-h-[500px]"
               >
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:border-indigo-500/30 dark:border-slate-800 dark:bg-slate-900 shadow-sm">

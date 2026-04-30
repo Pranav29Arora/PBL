@@ -4,7 +4,6 @@ StockVision AI — FastAPI ML service.
 
 from __future__ import annotations
 
-import logging
 import os
 import sys
 
@@ -16,9 +15,6 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ml.predictor import predict_close
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("stockvision")
 
 app = FastAPI(title="StockVision AI API", version="1.0.0")
 
@@ -59,9 +55,9 @@ class PredictResponse(BaseModel):
     r2_holdout: float | None = None
 
 
-@app.get("/api/health")
-def health():
-    return {"status": "ok", "service": "StockVision AI"}
+# @app.get("/api/health")
+# def health():
+#     return {"status": "ok", "service": "StockVision AI"}
 
 
 @app.post("/api/predict", response_model=PredictResponse)
@@ -84,7 +80,6 @@ def api_predict(body: PredictRequest):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        logger.exception("Prediction failed")
         detail = "Upstream market data or model error. Try again shortly."
         if os.getenv("DEBUG_API", "").lower() in ("1", "true", "yes"):
             detail = f"{detail} ({type(e).__name__}: {e})"

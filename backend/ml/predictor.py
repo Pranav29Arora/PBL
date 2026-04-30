@@ -6,7 +6,6 @@ that session's **closing** price.
 
 from __future__ import annotations
 
-import logging
 import math
 import time
 from typing import Any, Dict, Tuple
@@ -26,8 +25,6 @@ except ImportError:
 
 from utils.cache import get as cache_get, set as cache_set
 from utils.yahoo_chart import fetch_chart_v8
-
-logger = logging.getLogger(__name__)
 
 # Fallback when USDINR=X cannot be fetched (approximate).
 _USD_INR_FALLBACK = 83.0
@@ -100,7 +97,6 @@ def _fetch_history(symbol: str) -> pd.DataFrame:
                 break
         except Exception as e:
             last_err = e
-            logger.warning("yfinance history attempt %s failed for %s: %s", attempt + 1, sym, e)
         time.sleep(0.5 * (attempt + 1))
 
     if df is None or df.empty:
@@ -108,15 +104,12 @@ def _fetch_history(symbol: str) -> pd.DataFrame:
             df = _history_via_download(sym)
         except Exception as e:
             last_err = e
-            logger.warning("yfinance download fallback failed for %s: %s", sym, e)
 
     if df is None or df.empty:
         try:
             df = fetch_chart_v8(sym, range_param="2y", interval="1d")
-            logger.info("used Yahoo chart v8 fallback for %s (%s rows)", sym, len(df))
         except Exception as e:
             last_err = e
-            logger.warning("Yahoo chart v8 fallback failed for %s: %s", sym, e)
 
     if df is None or df.empty:
         msg = f"No price history returned for '{sym}'."
@@ -144,8 +137,8 @@ def _fundamentals(symbol: str) -> Tuple[float, float]:
     info: Dict[str, Any] = {}
     try:
         info = t.info or {}
-    except Exception as e:
-        logger.warning("ticker.info failed for %s: %s", symbol, e)
+    except Exception:
+        pass
 
     pe = info.get("trailingPE") or info.get("forwardPE")
     if pe is None or (isinstance(pe, float) and (math.isnan(pe) or math.isinf(pe))):
@@ -267,8 +260,7 @@ def _usd_inr_rate() -> float:
         r = float(df["Close"].iloc[-1])
         if math.isnan(r) or r <= 0:
             raise ValueError("invalid USDINR")
-    except Exception as e:
-        logger.warning("USDINR fetch failed, using fallback %.2f: %s", _USD_INR_FALLBACK, e)
+    except Exception:
         r = _USD_INR_FALLBACK
     cache_set(key, r, ttl_sec=1800)
     return r
