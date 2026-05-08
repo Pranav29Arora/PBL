@@ -55,9 +55,9 @@ class PredictResponse(BaseModel):
     r2_holdout: float | None = None
 
 
-# @app.get("/api/health")
-# def health():
-#     return {"status": "ok", "service": "StockVision AI"}
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "service": "StockVision AI"}
 
 
 @app.post("/api/predict", response_model=PredictResponse)
