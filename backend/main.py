@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import sys
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +39,7 @@ class PredictRequest(BaseModel):
 class ChartPoint(BaseModel):
     date: str
     close: float
-    open: float | None = None
+    open: Optional[float] = None
 
 
 class PredictResponse(BaseModel):
@@ -52,7 +53,7 @@ class PredictResponse(BaseModel):
     currency: str
     fx_rate_to_inr: float
     usd_converted: bool
-    r2_holdout: float | None = None
+    r2_holdout: Optional[float] = None
 
 
 @app.get("/api/health")

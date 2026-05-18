@@ -19,7 +19,7 @@ function formatApiError(err) {
 export default function Predict() {
   const { user } = useAuth()
   const { push } = useToast()
-  const [symbol, setSymbol] = useState('RELIANCE.NS')
+  const [symbol, setSymbol] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
 
@@ -83,7 +83,7 @@ export default function Predict() {
                 <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="RELIANCE.NS..."
+                  placeholder="e.g., RELIANCE.NS, AAPL..."
                   value={symbol}
                   onChange={(e) => setSymbol(e.target.value.toUpperCase())}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-bold text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white outline-none transition-all"

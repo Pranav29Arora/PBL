@@ -66,8 +66,7 @@ export default function Login() {
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-8">
-           <p className="text-sm text-slate-500">Built for PBL project excellence.</p>
+        <div className="relative z-10 flex items-center justify-end border-t border-white/10 pt-8">
            <p className="text-sm text-slate-500">v1.2.0</p>
         </div>
       </div>

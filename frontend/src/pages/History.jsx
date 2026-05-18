@@ -42,7 +42,13 @@ export default function History() {
 
   const handleDelete = async (id) => {
     if (!user?.uid) return
-    await deletePrediction(user.uid, id)
+    if (!window.confirm('Are you sure you want to delete this prediction?')) return
+    try {
+      await deletePrediction(user.uid, id)
+    } catch (error) {
+      console.error('Failed to delete prediction:', error)
+      alert('Failed to delete prediction. Please try again.')
+    }
   }
 
   const handleExport = () => {
