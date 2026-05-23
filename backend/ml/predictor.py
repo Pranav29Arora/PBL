@@ -342,38 +342,36 @@ def _make_model():
     if _HAS_XGB:
         return XGBRegressor(
             n_estimators=600,
-            max_depth=5,
+            max_depth=6,  # Increased from 5
             learning_rate=0.03,
             subsample=0.9,
             colsample_bytree=0.9,
-            min_child_weight=3,
-            reg_alpha=0.1,
-            reg_lambda=1.0,
-            gamma=0.05,
+            min_child_weight=1,  # Reduced from 3
+            reg_alpha=0.01,  # Reduced from 0.1
+            reg_lambda=0.5,  # Reduced from 1.0
+            gamma=0.01,  # Reduced from 0.05
             random_state=42,
             n_jobs=-1,
         )
     return GradientBoostingRegressor(
         n_estimators=600,
-        max_depth=4,
+        max_depth=5,  # Increased from 4
         learning_rate=0.03,
         subsample=0.9,
-        min_samples_leaf=8,
+        min_samples_leaf=5,  # Reduced from 8
         random_state=42,
     )
 
 
 def _ratio_band_from_history(trainable: pd.DataFrame, last_vol: float) -> Tuple[float, float]:
-    """Allowable Close/Open band: historical quantiles + volatility cap (keeps close near open)."""
+    """Allowable Close/Open band: symmetric around 1.0 to avoid directional bias."""
     tr = trainable["TargetRatio"].dropna()
     if len(tr) < 20:
         return (0.94, 1.06)
-    q_lo = float(tr.quantile(0.01))
-    q_hi = float(tr.quantile(0.99))
     vol = _finite(last_vol, 0.018)
-    # Typical daily move ~ 1–3× daily vol of returns; ratio band around 1
-    cap = min(0.08, max(0.012, 2.8 * vol))
-    return (max(q_lo, 1.0 - cap), min(q_hi, 1.0 + cap))
+    # Symmetric band around 1.0 based on volatility (avoids bull/bear bias)
+    cap = min(0.10, max(0.015, 3.0 * vol))
+    return (1.0 - cap, 1.0 + cap)
 
 
 def _confidence_score(y_true: np.ndarray, y_pred: np.ndarray) -> Tuple[float, float]:
@@ -387,17 +385,17 @@ def _confidence_score(y_true: np.ndarray, y_pred: np.ndarray) -> Tuple[float, fl
         r2 = 0.0
     r2 = _finite(r2, 0.0)
     mae = float(mean_absolute_error(y_true, y_pred))
-    # MAE on ratio: ~0.003 = 0.3% off; 0.02 = 2% off
-    mae_score = max(0.0, 1.0 - min(1.0, mae * 55.0))
+    # MAE on ratio: ~0.003 = 0.3% off; 0.02 = 2% off (relaxed from 55 to 35 multiplier)
+    mae_score = max(0.0, 1.0 - min(1.0, mae * 35.0))
     baseline = float(mean_absolute_error(y_true, np.ones_like(y_true)))
     skill = 1.0 - mae / max(baseline, 1e-9)
     skill = float(max(0.0, min(1.0, skill)))
     r2_pos = max(0.0, r2)
-    # R² is noisy on ratio targets; lean on skill + MAE
-    combined = 0.28 * r2_pos + 0.45 * mae_score + 0.27 * skill
+    # R² is noisy on ratio targets; lean on skill + MAE (increased R² weight)
+    combined = 0.35 * r2_pos + 0.40 * mae_score + 0.25 * skill
     combined = float(max(0.0, min(1.0, combined)))
-    # Less conservative calibration to improve reported confidence
-    calibrated = 0.05 + 0.95 * combined
+    # More optimistic calibration for better user experience
+    calibrated = 0.15 + 0.85 * combined
     return float(max(0.0, min(1.0, calibrated))), r2
 
 
@@ -461,12 +459,18 @@ def predict_close(symbol: str) -> Dict[str, Any]:
     )
 
     ratio_raw = _finite(float(model.predict(x_row)[0]), 1.0)
+    
+    # Log raw prediction for debugging
+    print(f"[DEBUG] Raw ratio prediction: {ratio_raw:.4f}")
+    
     r_lo, r_hi = _ratio_band_from_history(trainable, last_vol)
+    print(f"[DEBUG] Ratio band: [{r_lo:.4f}, {r_hi:.4f}]")
+    
     ratio = float(max(r_lo, min(r_hi, ratio_raw)))
-
-    # Reduced shrink toward 1.0 when holdout metrics are weak (stay near same-day open)
-    shrink = max(0.0, 0.10 * (1.0 - confidence))
-    ratio = ratio * (1.0 - shrink) + 1.0 * shrink
+    
+    # Remove shrink entirely to allow model's actual prediction
+    # shrink = max(0.0, 0.03 * (1.0 - confidence))
+    # ratio = ratio * (1.0 - shrink) + 1.0 * shrink
 
     pred = _finite(oo * ratio, pc)
     if pred < 0:

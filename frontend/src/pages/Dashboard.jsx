@@ -58,6 +58,23 @@ export default function Dashboard() {
       : null
   const recent = predictions.slice(0, 5)
 
+  // Calculate weekly runs (last 7 days)
+  const [weeklyStats, setWeeklyStats] = useState({ weeklyRuns: 0, weeklyGoal: 10, weeklyProgress: 0 })
+
+  useEffect(() => {
+    const calculateWeeklyStats = () => {
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      const weeklyRuns = predictions.filter(p => new Date(p.timestamp) >= oneWeekAgo).length
+      const weeklyGoal = Math.max(10, Math.ceil(weeklyRuns / 0.6))
+      const weeklyProgress = Math.min(100, Math.round((weeklyRuns / weeklyGoal) * 100))
+      setWeeklyStats({ weeklyRuns, weeklyGoal, weeklyProgress })
+    }
+
+    calculateWeeklyStats()
+    const interval = setInterval(calculateWeeklyStats, 60000) // Update every minute
+    return () => clearInterval(interval)
+  }, [predictions])
+
   return (
     <motion.div
       variants={container}
@@ -197,11 +214,11 @@ export default function Dashboard() {
                    <div className="rounded-xl bg-slate-900 p-4 text-white">
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Weekly Goal</p>
                       <div className="flex items-center justify-between">
-                         <p className="text-sm font-bold">12 / 20 Runs</p>
-                         <p className="text-xs text-indigo-400 font-bold">60%</p>
+                         <p className="text-sm font-bold">{weeklyStats.weeklyRuns} / {weeklyStats.weeklyGoal} Runs</p>
+                         <p className="text-xs text-indigo-400 font-bold">{weeklyStats.weeklyProgress}%</p>
                       </div>
                       <div className="mt-2 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
-                         <div className="h-full w-[60%] bg-indigo-500" />
+                         <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${weeklyStats.weeklyProgress}%` }} />
                       </div>
                    </div>
                 </div>
